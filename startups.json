@@ -1,0 +1,182 @@
+[
+  {
+    "name": "ColdSire",
+    "url": "https://trustmrr.com/startup/coldsire",
+    "category": "SaaS",
+    "revenue": 18000.0,
+    "price": 215000.0,
+    "multiple": 1.0,
+    "roi_monthly": 0.08372093023255814,
+    "months_to_recover": 11.944444444444445
+  },
+  {
+    "name": "RunAds.ai",
+    "url": "https://trustmrr.com/startup/runads-ai",
+    "category": "Marketing",
+    "revenue": 11000.0,
+    "price": 550000.0,
+    "multiple": 4.1,
+    "roi_monthly": 0.02,
+    "months_to_recover": 50.0
+  },
+  {
+    "name": "Outstand.so",
+    "url": "https://trustmrr.com/startup/outstand-so",
+    "category": "Developer Tools",
+    "revenue": 6000.0,
+    "price": 149000.0,
+    "multiple": 2.1,
+    "roi_monthly": 0.040268456375838924,
+    "months_to_recover": 24.833333333333332
+  },
+  {
+    "name": "Jaidisoui",
+    "url": "https://trustmrr.com/startup/jaidisoui",
+    "category": "E-commerce",
+    "revenue": 1600.0,
+    "price": 80000.0,
+    "multiple": 4.1,
+    "roi_monthly": 0.02,
+    "months_to_recover": 50.0
+  },
+  {
+    "name": "BETIX",
+    "url": "https://trustmrr.com/startup/betix",
+    "category": "Analytics",
+    "revenue": 1500.0,
+    "price": 25000.0,
+    "multiple": 1.4,
+    "roi_monthly": 0.06,
+    "months_to_recover": 16.666666666666668
+  },
+  {
+    "name": "Nativelaunch",
+    "url": "https://trustmrr.com/startup/nativelaunch",
+    "category": "Developer Tools",
+    "revenue": 1300.0,
+    "price": 15000.0,
+    "multiple": 0.9,
+    "roi_monthly": 0.08666666666666667,
+    "months_to_recover": 11.538461538461538
+  },
+  {
+    "name": "VideoToText",
+    "url": "https://trustmrr.com/startup/videototext",
+    "category": "Artificial Intelligence",
+    "revenue": 1100.0,
+    "price": 30000.0,
+    "multiple": 2.2,
+    "roi_monthly": 0.03666666666666667,
+    "months_to_recover": 27.272727272727273
+  },
+  {
+    "name": "Rift: Reality Shifting",
+    "url": "https://trustmrr.com/startup/rift-reality-shifting",
+    "category": "Entertainment",
+    "revenue": 899.0,
+    "price": 15000.0,
+    "multiple": 1.4,
+    "roi_monthly": 0.05993333333333333,
+    "months_to_recover": 16.685205784204673
+  },
+  {
+    "name": "Balzac AI",
+    "url": "https://trustmrr.com/startup/balzac-ai",
+    "category": "Marketing",
+    "revenue": 821.0,
+    "price": 20000.0,
+    "multiple": 2.0,
+    "roi_monthly": 0.04105,
+    "months_to_recover": 24.360535931790498
+  },
+  {
+    "name": "Roomy AI",
+    "url": "https://trustmrr.com/startup/roomy-ai",
+    "category": "Mobile Apps",
+    "revenue": 621.0,
+    "price": 8900.0,
+    "multiple": 1.2,
+    "roi_monthly": 0.0697752808988764,
+    "months_to_recover": 14.331723027375201
+  },
+  {
+    "name": "QR-Hero",
+    "url": "https://trustmrr.com/startup/qr-hero",
+    "category": "Marketing",
+    "revenue": 617.0,
+    "price": 15000.0,
+    "multiple": 2.0,
+    "roi_monthly": 0.041133333333333334,
+    "months_to_recover": 24.311183144246353
+  },
+  {
+    "name": "Dora Studio",
+    "url": "https://trustmrr.com/startup/dora-studio",
+    "category": "Content Creation",
+    "revenue": 322.0,
+    "price": 10000.0,
+    "multiple": 2.6,
+    "roi_monthly": 0.0322,
+    "months_to_recover": 31.055900621118013
+  },
+  {
+    "name": "Kickpot App",
+    "url": "https://trustmrr.com/startup/kickpot-app",
+    "category": "SaaS",
+    "revenue": 220.0,
+    "price": 10000.0,
+    "multiple": 3.8,
+    "roi_monthly": 0.022,
+    "months_to_recover": 45.45454545454545
+  },
+  {
+    "name": "Tiller",
+    "url": "https://trustmrr.com/startup/tiller",
+    "category": "Analytics",
+    "revenue": 112.0,
+    "price": 3000.0,
+    "multiple": 2.2,
+    "roi_monthly": 0.037333333333333336,
+    "months_to_recover": 26.785714285714285
+  },
+  {
+    "name": "SwipeAway",
+    "url": "https://trustmrr.com/startup/swipeaway",
+    "category": "Mobile Apps",
+    "revenue": 92.0,
+    "price": 2600.0,
+    "multiple": 2.4,
+    "roi_monthly": 0.03538461538461538,
+    "months_to_recover": 28.26086956521739
+  },
+  {
+    "name": "Digits",
+    "url": "https://trustmrr.com/startup/digits",
+    "category": "Fintech",
+    "revenue": 29.0,
+    "price": 1000.0,
+    "multiple": 2.9,
+    "roi_monthly": 0.029,
+    "months_to_recover": 34.48275862068966
+  },
+  {
+    "name": "SnapLearn",
+    "url": "https://trustmrr.com/startup/snaplearn",
+    "category": "Mobile Apps",
+    "revenue": 21.0,
+    "price": 300.0,
+    "multiple": 1.2,
+    "roi_monthly": 0.07,
+    "months_to_recover": 14.285714285714286
+  },
+  {
+    "name": "RejectFix",
+    "url": "https://trustmrr.com/startup/rejectfix",
+    "category": "Developer Tools",
+    "revenue": 15.0,
+    "price": 500.0,
+    "multiple": 2.8,
+    "roi_monthly": 0.03,
+    "months_to_recover": 33.333333333333336
+  }
+]
