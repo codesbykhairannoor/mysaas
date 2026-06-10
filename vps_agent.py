@@ -19,11 +19,12 @@ OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "ghp_isi-github-token-anda-disini")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "username_anda")
 
-# Daftar Model Qwen (Disortir berdasarkan yang PASTI konek di akun Anda)
+# Daftar Model Qwen yang TERBUKTI CONNECT (Lulus Uji Test)
+# Menghapus model yang terkena 403 agar log bersih tanpa error
 FALLBACK_MODELS = [
-    "qwen-turbo",              # Super Cepat, Murah, dan SUDAH PASTI KONEK
+    "qwen-turbo",              # Super Cepat, Murah ($0.05 / 1M token)
+    "qwen-flash",              # Generasi Flash baru (sangat cepat)
     "qwen-plus",               # Seimbang ($0.40 / 1M token)
-    "qwen-max"                 # Paling Pintar (Cadangan Terakhir)
 ]
 
 # Inisialisasi OpenAI Client (Bisa untuk DashScope)
