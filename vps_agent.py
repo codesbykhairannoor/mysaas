@@ -19,15 +19,10 @@ OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "ghp_isi-github-token-anda-disini")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "username_anda")
 
-# Daftar 7 Model Qwen Termurah & Tercepat untuk Fallback
-# Urutan dari yang paling murah/gratis hingga yang paling kuat
+# Daftar Model Qwen (Disortir berdasarkan yang PASTI konek di akun Anda)
 FALLBACK_MODELS = [
-    "qwen2.5-7b-instruct",     # Model open-source teringan, termurah (sering masuk free tier)
-    "qwen-turbo-latest",       # Versi turbo paling baru (sangat murah)
-    "qwen-turbo",              # Super Cepat, Murah ($0.05 / 1M token)
+    "qwen-turbo",              # Super Cepat, Murah, dan SUDAH PASTI KONEK
     "qwen-plus",               # Seimbang ($0.40 / 1M token)
-    "qwen-flash",              # Generasi Flash baru (sangat cepat)
-    "qwen2.5-72b-instruct",    # Open Source top tier
     "qwen-max"                 # Paling Pintar (Cadangan Terakhir)
 ]
 
