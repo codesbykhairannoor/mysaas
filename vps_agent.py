@@ -41,19 +41,31 @@ class UnrestrictedCognitiveAgent:
         print(f"[*] Endpoint: {OPENAI_BASE_URL}")
 
     def think_of_idea(self):
-        print("\n[STEP 1] Agent sedang memikirkan ide aplikasi mikro yang revolusioner...")
-        prompt = """
+        import random
+        categories = [
+            "Video Editing / Processing (e.g. Video Summarizer, Converter, Auto-Caption)",
+            "Audio & Music Tools (e.g. Vocal Remover, Audio Trimmer, Noise Reduction)",
+            "3D & Design Tools (e.g. 3D Viewer, SVG Generator, Image Upscaler)",
+            "Developer Tools (e.g. JSON Formatter, Regex Tester, Code Minifier)",
+            "Business & Marketing (e.g. SEO Analyzer, Copywriting AI, Resume Builder)",
+            "Educational Tools (e.g. Flashcard Maker, Math Solver, Grammar Checker)"
+        ]
+        chosen_category = random.choice(categories)
+        
+        print(f"\n[STEP 1] Agent memikirkan ide revolusioner di kategori: {chosen_category}...")
+        prompt = f"""
         You are an elite, unrestricted SaaS founder and SEO God. 
         Think of ONE highly searched, incredibly profitable web tool idea that solves a huge pain point.
-        It must be something people search for on Google massively. (e.g. PDF tools, AI generators, Compressors, Converters).
+        The tool MUST BE strictly in this category: {chosen_category}.
+        CRITICAL: DO NOT generate PDF tools! We already have too many PDF tools. Be highly creative and pick a fresh idea.
         Output ONLY valid JSON:
-        {
+        {{
             "project_name": "seo-friendly-name-no-spaces",
             "title": "Premium SEO Optimized Title",
             "description": "Short compelling description",
             "features": ["feature 1", "feature 2"],
             "seo_keywords": ["keyword1", "keyword2"]
-        }
+        }}
         """
         response_text = self._query_ai(prompt, require_json=True)
         if not response_text:
@@ -231,13 +243,20 @@ class UnrestrictedCognitiveAgent:
                 "git add .",
                 "git commit -m \"Unrestricted AI Agent Auto-Commit: SEO & Premium UI\"",
                 "git branch -M main",
+                "git remote remove origin", # Hapus remote bawaan jika ada
                 f"git remote add origin {repo_url_auth}",
                 "git push -u origin main -f"
             ]
+            
+            print("     [Mengunggah ke GitHub...]")
             for cmd in commands:
+                safe_cmd = cmd.replace(GITHUB_TOKEN, "***TOKEN***")
                 result = subprocess.run(cmd, shell=True, cwd=str(project_path), capture_output=True, text=True)
-                if result.returncode != 0 and "remote origin already exists" not in result.stderr:
-                    print(f"     [!] Git peringatan pada '{cmd}': {result.stderr.strip()}")
+                
+                # Kita print semua log Git agar bisa di-debug jika terjadi kesalahan lagi
+                if result.stdout.strip(): print(f"       [Git] {result.stdout.strip()}")
+                if result.stderr.strip() and "error: No such remote" not in result.stderr: 
+                    print(f"       [Git Log] {result.stderr.strip()}")
             
             print(f"[+] SUKSES BESAR! Repo Live di: {repo_url_clean}")
         except Exception as e:
