@@ -7,7 +7,6 @@ import requests
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI, PermissionDeniedError, RateLimitError, APIError
-from duckduckgo_search import DDGS
 
 # ==========================================
 # KONFIGURASI "THE IMMORTAL QWEN AGENT"
@@ -38,25 +37,22 @@ class UnrestrictedCognitiveAgent:
         print(f"[*] Endpoint: {OPENAI_BASE_URL}")
 
     def _perform_live_research(self):
-        print("\n[STEP 0] Mengakses Internet: Mencari tren keyword micro SaaS tertinggi...")
-        queries = [
-            "most searched free online utility tools 2026",
-            "trending micro saas ideas high volume low competition",
-            "most popular ai web tools right now",
-            "free online converters highly searched 2026",
-            "best single page web utilities for seo"
-        ]
-        query = random.choice(queries)
+        print("\n[STEP 0] Mengakses Internet: Mengambil tren teknologi terbaru secara real-time...")
         results_text = ""
         try:
-            with DDGS() as ddgs:
-                results = list(ddgs.text(query, max_results=4))
-                for r in results:
-                    results_text += f"- {r.get('title')}: {r.get('body')}\n"
-            print("     [+] Berhasil mendapatkan data intelijen dari Google/DDG!")
+            # Menggunakan API gratis HackerNews (Tanpa butuh library duckduckgo_search)
+            top_stories_url = "https://hacker-news.firebaseio.com/v0/topstories.json"
+            top_stories = requests.get(top_stories_url, timeout=10).json()[:8]
+            
+            for story_id in top_stories:
+                story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json", timeout=10).json()
+                if story and 'title' in story:
+                    results_text += f"- Tren saat ini: {story.get('title')}\n"
+                    
+            print("     [+] Berhasil memanen data intelijen dari internet (Tidak butuh modul eksternal)!")
             return results_text
         except Exception as e:
-            print(f"     [!] Pencarian web gagal, menggunakan database internal AI: {e}")
+            print(f"     [!] Koneksi internet ke API Tren gagal: {e}")
             return "No live data. Use your brilliant internal knowledge."
 
     def think_of_idea(self):
