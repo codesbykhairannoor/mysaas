@@ -221,20 +221,25 @@ class UnrestrictedCognitiveAgent:
         
         try:
             requests.post(url, headers=headers, json=data) # Mengabaikan respon 422 (repo exists)
-            repo_url = f"https://github.com/{GITHUB_USERNAME}/{idea.get('project_name')}.git"
+            repo_url_auth = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_USERNAME}/{idea.get('project_name')}.git"
+            repo_url_clean = f"https://github.com/{GITHUB_USERNAME}/{idea.get('project_name')}.git"
             
             commands = [
                 "git init",
+                "git config user.email \"vps-agent@ai.local\"",
+                "git config user.name \"Immortal Qwen Agent\"",
                 "git add .",
                 "git commit -m \"Unrestricted AI Agent Auto-Commit: SEO & Premium UI\"",
                 "git branch -M main",
-                f"git remote add origin {repo_url}",
+                f"git remote add origin {repo_url_auth}",
                 "git push -u origin main -f"
             ]
             for cmd in commands:
-                subprocess.run(cmd, shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                result = subprocess.run(cmd, shell=True, cwd=str(project_path), capture_output=True, text=True)
+                if result.returncode != 0 and "remote origin already exists" not in result.stderr:
+                    print(f"     [!] Git peringatan pada '{cmd}': {result.stderr.strip()}")
             
-            print(f"[+] SUKSES BESAR! Repo Live di: {repo_url}")
+            print(f"[+] SUKSES BESAR! Repo Live di: {repo_url_clean}")
         except Exception as e:
             print(f"[!] Gagal publikasi: {e}")
 
