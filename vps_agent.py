@@ -1,33 +1,30 @@
 import os
 import time
 import json
+import random
 import subprocess
 import requests
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI, PermissionDeniedError, RateLimitError, APIError
+from duckduckgo_search import DDGS
 
 # ==========================================
 # KONFIGURASI "THE IMMORTAL QWEN AGENT"
 # ==========================================
-# Load variables dari file .env di folder yang sama
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-isi-openai-key-anda-disini")
-# Defaulting to Alibaba DashScope International if OPENAI_BASE_URL is not set
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "ghp_isi-github-token-anda-disini")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "username_anda")
 
-# Daftar Model Qwen yang TERBUKTI CONNECT (Lulus Uji Test)
-# Menghapus model yang terkena 403 agar log bersih tanpa error
 FALLBACK_MODELS = [
     "qwen-turbo",              # Super Cepat, Murah ($0.05 / 1M token)
     "qwen-flash",              # Generasi Flash baru (sangat cepat)
     "qwen-plus",               # Seimbang ($0.40 / 1M token)
 ]
 
-# Inisialisasi OpenAI Client (Bisa untuk DashScope)
 client = OpenAI(
     api_key=OPENAI_API_KEY,
     base_url=OPENAI_BASE_URL
@@ -37,27 +34,47 @@ class UnrestrictedCognitiveAgent:
     def __init__(self, output_dir="./saas_factory"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        print(f"[*] AGI Agent Started. Mode: THE IMMORTAL QWEN. Working Directory: {self.output_dir.absolute()}")
+        print(f"[*] AGI Agent Started. Mode: GOD MODE (Web Search + i18n). Working Directory: {self.output_dir.absolute()}")
         print(f"[*] Endpoint: {OPENAI_BASE_URL}")
 
-    def think_of_idea(self):
-        import random
-        categories = [
-            "Video Editing / Processing (e.g. Video Summarizer, Converter, Auto-Caption)",
-            "Audio & Music Tools (e.g. Vocal Remover, Audio Trimmer, Noise Reduction)",
-            "3D & Design Tools (e.g. 3D Viewer, SVG Generator, Image Upscaler)",
-            "Developer Tools (e.g. JSON Formatter, Regex Tester, Code Minifier)",
-            "Business & Marketing (e.g. SEO Analyzer, Copywriting AI, Resume Builder)",
-            "Educational Tools (e.g. Flashcard Maker, Math Solver, Grammar Checker)"
+    def _perform_live_research(self):
+        print("\n[STEP 0] Mengakses Internet: Mencari tren keyword micro SaaS tertinggi...")
+        queries = [
+            "most searched free online utility tools 2026",
+            "trending micro saas ideas high volume low competition",
+            "most popular ai web tools right now",
+            "free online converters highly searched 2026",
+            "best single page web utilities for seo"
         ]
-        chosen_category = random.choice(categories)
+        query = random.choice(queries)
+        results_text = ""
+        try:
+            with DDGS() as ddgs:
+                results = list(ddgs.text(query, max_results=4))
+                for r in results:
+                    results_text += f"- {r.get('title')}: {r.get('body')}\n"
+            print("     [+] Berhasil mendapatkan data intelijen dari Google/DDG!")
+            return results_text
+        except Exception as e:
+            print(f"     [!] Pencarian web gagal, menggunakan database internal AI: {e}")
+            return "No live data. Use your brilliant internal knowledge."
+
+    def think_of_idea(self):
+        live_data = self._perform_live_research()
         
-        print(f"\n[STEP 1] Agent memikirkan ide revolusioner di kategori: {chosen_category}...")
+        print(f"\n[STEP 1] Agent merumuskan ide brilian berdasarkan data internet...")
         prompt = f"""
-        You are an elite, unrestricted SaaS founder and SEO God. 
-        Think of ONE highly searched, incredibly profitable web tool idea that solves a huge pain point.
-        The tool MUST BE strictly in this category: {chosen_category}.
-        CRITICAL: DO NOT generate PDF tools! We already have too many PDF tools. Be highly creative and pick a fresh idea.
+        You are an elite, unrestricted SaaS founder and an absolute SEO God. 
+        I have provided you with live web search data about currently trending utility tools:
+        
+        {live_data}
+        
+        CRITICAL DOCTRINE:
+        1. DO NOT MAKE PDF TOOLS! We already have too many PDF tools. BE CREATIVE.
+        2. Pick ONE incredibly profitable, high search-volume utility tool idea.
+        3. It must be highly requested globally, easy to build as a single-page Next.js app, and solve a MASSIVE pain point.
+        4. Examples of allowed categories (Pick anything fresh): AI Text Generators, Video Summarizers, Image Upscalers, Regex Testers, SEO Analyzers, CSS Generators, Language Translators, etc.
+        
         Output ONLY valid JSON:
         {{
             "project_name": "seo-friendly-name-no-spaces",
@@ -72,7 +89,6 @@ class UnrestrictedCognitiveAgent:
             return None
         
         try:
-            # Membersihkan balasan jika Qwen menambahkan karakter markdown ekstra
             if "```json" in response_text:
                 response_text = response_text.split("```json")[1].split("```")[0]
             elif "```" in response_text:
@@ -94,7 +110,7 @@ class UnrestrictedCognitiveAgent:
         return project_path
 
     def write_initial_code(self, project_path, idea):
-        print(f"\n[STEP 3] Menulis draf kode pertama (UI + Logic + Ads + Stripe)...")
+        print(f"\n[STEP 3] Menulis draf kode (UI + Logic + Ads + Stripe + i18n)...")
         prompt = f"""
         Write the FULL content for `src/app/page.tsx` for a Next.js 14 App Router project.
         Project: {idea.get('title')} - {idea.get('description')}
@@ -102,9 +118,10 @@ class UnrestrictedCognitiveAgent:
         CRITICAL UNRESTRICTED INSTRUCTIONS:
         1. MUST include placeholder Google AdSense ad slots (e.g. <div className="adsense-slot">).
         2. MUST include Stripe / PayPal Checkout UI components for premium features.
-        3. MUST have flawless Next.js metadata generation for SUPER SEO (generateMetadata).
+        3. MUST have flawless Next.js metadata generation for SUPER SEO.
         4. MUST use Tailwind CSS with an ultra-premium, modern, glassmorphism UI.
-        5. Provide fully working UI logic using 'use client' where necessary, or structure it properly if server-rendered.
+        5. MUST INCLUDE Multi-Language (i18n) support built-in (e.g., UI elements that can switch languages to dominate Global GEO SEO).
+        6. Provide fully working UI logic using 'use client' where necessary, or structure it properly if server-rendered.
         
         OUTPUT ONLY THE RAW TYPESCRIPT CODE. No markdown fences.
         """
@@ -118,12 +135,9 @@ class UnrestrictedCognitiveAgent:
         
         for i in range(max_iterations):
             print(f"  -> Iterasi Evaluasi ke-{i+1}...")
-            
-            # Sub-step A: Test the build locally
             print("  -> Menjalankan 'npm run build' untuk quality control...")
             build_success, build_logs = self._test_build(project_path)
             
-            # Sub-step B: AI Critic Agent
             critic_prompt = f"""
             You are a harsh Senior Staff Engineer and SEO Expert. Review this Next.js page code.
             Project Idea: {idea.get('title')}
@@ -140,6 +154,7 @@ class UnrestrictedCognitiveAgent:
             2. Is the SEO metadata TRULY optimized?
             3. Are the monetization (Ads/Stripe) prominent enough?
             4. Is the UI actually premium?
+            5. Is Multi-Language (i18n) properly implemented?
             
             If it's absolutely perfect and build passes, reply EXACTLY with the single word "PERFECT". 
             Otherwise, rewrite the FULL, FIXED, AND ENHANCED code. ONLY output raw code, no explanations.
@@ -168,10 +183,6 @@ class UnrestrictedCognitiveAgent:
             return False, str(e)
 
     def _query_ai(self, prompt, require_json=False):
-        """
-        Sistem Fallback Immortal. Akan mencoba 5 model termurah Alibaba secara berurutan.
-        Jika kena 403 atau error lain, otomatis lompat ke model selanjutnya.
-        """
         for model_name in FALLBACK_MODELS:
             print(f"     [>] Mencoba memanggil API dengan model: {model_name}...")
             try:
@@ -183,7 +194,6 @@ class UnrestrictedCognitiveAgent:
                 )
                 
                 code = response.choices[0].message.content.strip()
-                # Bersihkan markdown quotes jika ada
                 if code.startswith("```tsx"): code = code[6:]
                 elif code.startswith("```typescript"): code = code[14:]
                 elif code.startswith("```"): code = code[3:]
@@ -199,7 +209,6 @@ class UnrestrictedCognitiveAgent:
                 time.sleep(2)
                 continue
             except APIError as e:
-                # Menangkap error 404 Model Not Found dari Alibaba atau error generik lainnya
                 print(f"     [X] API Error pada model '{model_name}': {e}. Melompat ke model cadangan...")
                 continue
             except Exception as e:
@@ -243,7 +252,7 @@ class UnrestrictedCognitiveAgent:
                 "git add .",
                 "git commit -m \"Unrestricted AI Agent Auto-Commit: SEO & Premium UI\"",
                 "git branch -M main",
-                "git remote remove origin", # Hapus remote bawaan jika ada
+                "git remote remove origin", 
                 f"git remote add origin {repo_url_auth}",
                 "git push -u origin main -f"
             ]
@@ -253,7 +262,6 @@ class UnrestrictedCognitiveAgent:
                 safe_cmd = cmd.replace(GITHUB_TOKEN, "***TOKEN***")
                 result = subprocess.run(cmd, shell=True, cwd=str(project_path), capture_output=True, text=True)
                 
-                # Kita print semua log Git agar bisa di-debug jika terjadi kesalahan lagi
                 if result.stdout.strip(): print(f"       [Git] {result.stdout.strip()}")
                 if result.stderr.strip() and "error: No such remote" not in result.stderr: 
                     print(f"       [Git Log] {result.stderr.strip()}")
@@ -275,7 +283,7 @@ class UnrestrictedCognitiveAgent:
                 
                 project_path = self.setup_nextjs(idea.get("project_name"))
                 
-                print("  -> Menginstall dependencies pendukung (lucide-react, framer-motion, stripe)...")
+                print("  -> Menginstall dependencies pendukung (lucide-react, framer-motion, stripe, duckduckgo-search)...")
                 subprocess.run("npm install lucide-react framer-motion stripe", shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL)
                 
                 initial_code = self.write_initial_code(project_path, idea)
