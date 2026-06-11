@@ -241,9 +241,20 @@ class UnrestrictedCognitiveAgent:
         }
         
         try:
-            requests.post(url, headers=headers, json=data) # Mengabaikan respon 422 (repo exists)
-            repo_url_auth = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_USERNAME}/{idea.get('project_name')}.git"
-            repo_url_clean = f"https://github.com/{GITHUB_USERNAME}/{idea.get('project_name')}.git"
+            r = requests.post(url, headers=headers, json=data) # Mengabaikan respon 422 (repo exists)
+            
+            # [CRITICAL FIX] Ambil username asli dari GitHub Token API response!
+            # Karena jika GITHUB_USERNAME di .env salah ketik, git push akan gagal "Repository not found"
+            response_data = r.json()
+            if "owner" in response_data:
+                actual_username = response_data["owner"]["login"]
+            else:
+                # Fallback ke request GET user jika post return 422 (repo already exists)
+                user_req = requests.get("https://api.github.com/user", headers=headers)
+                actual_username = user_req.json().get("login", GITHUB_USERNAME)
+                
+            repo_url_auth = f"https://{GITHUB_TOKEN}@github.com/{actual_username}/{idea.get('project_name')}.git"
+            repo_url_clean = f"https://github.com/{actual_username}/{idea.get('project_name')}.git"
             
             commands = [
                 "git init",
