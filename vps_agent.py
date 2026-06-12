@@ -4,6 +4,7 @@ import json
 import random
 import subprocess
 import requests
+import re
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI, PermissionDeniedError, RateLimitError, APIError
@@ -134,36 +135,61 @@ class UnrestrictedCognitiveAgent:
             print("  -> Menjalankan 'npm run build' untuk quality control...")
             build_success, build_logs = self._test_build(project_path)
             
-            critic_prompt = f"""
-            You are a harsh Senior Staff Engineer and SEO Expert. Review this Next.js page code.
-            Project Idea: {idea.get('title')}
-            Build Status: {'SUCCESS' if build_success else 'FAILED'}
-            Build Logs: {build_logs[-1000:] if not build_success else 'No errors.'}
-            
-            Current Code:
-            ```tsx
-            {best_code}
-            ```
-            
-            Identify flaws:
-            1. Did the build fail? If yes, what is the exact fix?
-            2. Is the SEO metadata TRULY optimized?
-            3. Are the monetization (Ads/Stripe) prominent enough?
-            4. Is the UI actually premium?
-            5. Is Multi-Language (i18n) properly implemented?
-            
-            If it's absolutely perfect and build passes, reply EXACTLY with the single word "PERFECT". 
-            Otherwise, rewrite the FULL, FIXED, AND ENHANCED code. ONLY output raw code, no explanations.
-            """
+            if not build_success:
+                critic_prompt = f"""
+                You are a Senior Staff Engineer fixing a BROKEN Next.js page.
+                The build FAILED with these logs:
+                {build_logs[-1500:]}
+                
+                Current Code:
+                ```tsx
+                {best_code}
+                ```
+                
+                CRITICAL: You MUST fix the errors. DO NOT reply with "PERFECT". 
+                Rewrite the FULL, FIXED code. ONLY output raw code, no markdown fences.
+                """
+            else:
+                critic_prompt = f"""
+                You are a harsh Senior Staff Engineer reviewing a Next.js page.
+                Build is SUCCESSFUL.
+                Project Idea: {idea.get('title')}
+                
+                Current Code:
+                ```tsx
+                {best_code}
+                ```
+                
+                Identify flaws:
+                1. Is the SEO metadata TRULY optimized?
+                2. Are the monetization (Ads/Stripe) prominent enough?
+                3. Is the UI actually premium?
+                4. Is Multi-Language (i18n) properly implemented?
+                
+                If it's absolutely perfect, reply EXACTLY with the single word "PERFECT". 
+                Otherwise, rewrite the FULL ENHANCED code. ONLY output raw code, no explanations.
+                """
             
             response = self._query_ai(critic_prompt)
+            clean_resp = response.strip()
             
-            if response.strip() == "PERFECT" and build_success:
-                print("  [+] Kritis Agen: Kode sudah SEMPURNA dan lulus Build! Keluar dari loop.")
-                break
+            is_perfect = clean_resp == "PERFECT" or clean_resp.startswith("PERFECT")
+            
+            if is_perfect:
+                if build_success:
+                    print("  [+] Kritis Agen: Kode sudah SEMPURNA dan lulus Build! Keluar dari loop.")
+                    break
+                else:
+                    print("  [!] Peringatan: Agen menjawab PERFECT tapi Build GAGAL! Memaksa iterasi ulang tanpa menyimpan...")
+                    continue # Jangan save "PERFECT" ke file!
             else:
-                print("  [!] Kritis Agen: Menemukan kekurangan. Menerapkan kode yang lebih baik...")
-                best_code = response
+                # Cek jika agen mengembalikan teks kosong
+                if not clean_resp:
+                    print("  [!] Agen mengembalikan teks kosong, skip save...")
+                    continue
+                    
+                print("  [!] Kritis Agen: Menemukan kekurangan atau error. Menerapkan perbaikan kode...")
+                best_code = clean_resp
                 self._save_code(project_path / "src" / "app" / "page.tsx", best_code)
                 
         return best_code
@@ -189,13 +215,17 @@ class UnrestrictedCognitiveAgent:
                     response_format=response_format
                 )
                 
-                code = response.choices[0].message.content.strip()
-                if code.startswith("```tsx"): code = code[6:]
-                elif code.startswith("```typescript"): code = code[14:]
-                elif code.startswith("```"): code = code[3:]
-                if code.endswith("```"): code = code[:-3]
+                content = response.choices[0].message.content.strip()
                 
-                return code.strip()
+                if not require_json and content != "PERFECT":
+                    # Ekstrak kode asli jika terbungkus markdown
+                    match = re.search(r'```(?:tsx|typescript|ts|javascript|js)?\n(.*?)\n```', content, re.DOTALL)
+                    if match:
+                        content = match.group(1).strip()
+                    elif content.startswith("```"): # Fallback
+                        content = content.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+                
+                return content.strip()
                 
             except PermissionDeniedError:
                 print(f"     [X] Error 403: Akses ditolak untuk model '{model_name}'. Melompat ke model cadangan...")
