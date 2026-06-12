@@ -380,6 +380,10 @@ class EnterpriseCognitiveAgent:
                     self.self_reflect_and_fix(project_path, idea, initial_files)
                     self.publish_to_github(project_path, idea)
                     
+                    print(f"  [🧹] Membersihkan direktori lokal {project_path} untuk menghemat ruang disk VPS...")
+                    import shutil
+                    shutil.rmtree(project_path, ignore_errors=True)
+                    
                     if project_number < 2:
                         print(f"\n[!] Proyek {project_number} Selesai. Istirahat 1 menit sebelum proyek terakhir...\n")
                         time.sleep(60)
