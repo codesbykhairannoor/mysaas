@@ -91,7 +91,9 @@ class EnterpriseCognitiveAgent:
             print(f"     [!] Error parsing JSON dari DESIGN.md: {e}")
             
         if not idea:
-            idea = {"project_name": "enterprise-app", "title": "Enterprise App", "description": "Auto-generated"}
+            import random
+            random_id = random.randint(1000, 9999)
+            idea = {"project_name": f"enterprise-app-{random_id}", "title": f"Enterprise App {random_id}", "description": "Auto-generated"}
             
         return response_text, idea
 
@@ -99,7 +101,8 @@ class EnterpriseCognitiveAgent:
         print(f"\n[STEP 3] Membangun fondasi Enterprise Next.js untuk {project_name}...")
         project_path = self.output_dir / project_name
         if not project_path.exists():
-            cmd = f"npx -y create-next-app@latest {project_name} --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm"
+            # Menggunakan versi 14 spesifik agar tidak terblokir oleh pertanyaan interaktif Turbopack di Next.js 15
+            cmd = f"npx -y create-next-app@14.2.15 {project_name} --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm"
             subprocess.run(cmd, shell=True, check=True, cwd=str(self.output_dir), stdout=subprocess.DEVNULL)
         return project_path
 
@@ -137,6 +140,11 @@ class EnterpriseCognitiveAgent:
         """
         response_str = self._query_ai(prompt, require_json=True)
         try:
+            # Tangani kasus di mana AI tetap memberikan markdown fences ```json
+            match = re.search(r'```(?:json)?\n(.*?)\n```', response_str, re.DOTALL)
+            if match:
+                response_str = match.group(1).strip()
+                
             files_dict = json.loads(response_str)
             self._save_files(project_path, files_dict)
             return files_dict
