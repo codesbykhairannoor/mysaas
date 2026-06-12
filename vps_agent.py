@@ -57,44 +57,56 @@ class EnterpriseCognitiveAgent:
 
     def design_architecture(self, live_data):
         print(f"\n[STEP 2] Agent bertindak sebagai Chief Architect: Merancang DESIGN.md...")
-        prompt = f"""
-        You are an elite Silicon Valley Chief Software Architect.
-        Analyze this recent live market data:
-        {live_data}
-        
-        CRITICAL DOCTRINE:
-        1. NO PDF TOOLS. Pick a wildly creative, highly profitable enterprise-level web tool idea.
-        2. Plan a deep architecture for a Next.js App Router project.
-        3. The architecture MUST include strategies for: SUPER SEO, Global GEO Targeting (i18n Multi-language), AI-Friendly structured data, Community Features (forums/comments placeholder), and Enterprise-grade UI/UX.
-        
-        Write a comprehensive technical `DESIGN.md` document outlining the idea, target audience, and technical implementation plan.
-        Make it look extremely professional with markdown headings, tables, and architecture guidelines.
-        
-        End the document with a JSON block EXACTLY like this (wrapped in ```json):
-        ```json
-        {{
-            "project_name": "seo-friendly-name-no-spaces",
-            "title": "Premium SEO Optimized Title",
-            "description": "Short compelling description"
-        }}
-        ```
-        """
-        response_text = self._query_ai(prompt, require_json=False)
-        
-        # Ekstrak JSON dari dalam DESIGN.md
-        idea = None
-        try:
-            match = re.search(r'```json\n(.*?)\n```', response_text, re.DOTALL)
-            if match:
-                idea = json.loads(match.group(1).strip())
-        except Exception as e:
-            print(f"     [!] Error parsing JSON dari DESIGN.md: {e}")
+        for attempt in range(3):
+            prompt = f"""
+            You are an elite Silicon Valley Chief Software Architect.
+            Analyze this recent live market data:
+            {live_data}
             
-        if not idea:
-            import random
-            random_id = random.randint(1000, 9999)
-            idea = {"project_name": f"enterprise-app-{random_id}", "title": f"Enterprise App {random_id}", "description": "Auto-generated"}
+            CRITICAL DOCTRINE:
+            1. NO PDF TOOLS. Pick a wildly creative, highly profitable enterprise-level web tool idea.
+            2. SAFETY & AUTHENTICITY LAWS: You MUST NOT build any app that generates "AI Stock Photos/Videos". Your SaaS idea must respect strict contributor guidelines: "No AI-generated content, must have full copyright, no logos/trademarks, promote real diverse human authenticity." Build a tool that HELPS creators adhere to this, OR build something completely unrelated but safe.
+            3. Plan a deep architecture for a Next.js App Router project.
+            4. The architecture MUST include strategies for: SUPER SEO, Global GEO Targeting (i18n Multi-language), AI-Friendly structured data, Community Features (forums/comments placeholder), and Enterprise-grade UI/UX.
             
+            Write a comprehensive technical `DESIGN.md` document outlining the idea, target audience, and technical implementation plan.
+            Make it look extremely professional with markdown headings, tables, and architecture guidelines.
+            
+            End the document with a JSON block EXACTLY like this (wrapped in ```json):
+            ```json
+            {{
+                "project_name": "seo-friendly-name-no-spaces",
+                "title": "Premium SEO Optimized Title",
+                "description": "Short compelling description"
+            }}
+            ```
+            """
+            response_text = self._query_ai(prompt, require_json=False)
+            
+            # Ekstrak JSON dari dalam DESIGN.md
+            idea = None
+            try:
+                import re
+                match = re.search(r'```(?:json)?\n(.*?)\n```', response_text, re.DOTALL)
+                if match:
+                    idea = json.loads(match.group(1).strip())
+                else:
+                    # Coba cari JSON object terakhir jika tidak ada markdown fences
+                    match = re.search(r'(\{.*?\})', response_text, re.DOTALL)
+                    if match:
+                        idea = json.loads(match.group(1).strip())
+            except Exception as e:
+                print(f"     [!] Error parsing JSON dari DESIGN.md: {e}")
+                
+            if idea and "project_name" in idea:
+                return response_text, idea
+                
+            print(f"     [!] Agen gagal mengembalikan format JSON yang valid. Retrying... ({attempt+1}/3)")
+            
+        # Fallback ultimate
+        import random
+        random_id = random.randint(1000, 9999)
+        idea = {"project_name": f"enterprise-app-{random_id}", "title": f"Enterprise App {random_id}", "description": "Auto-generated"}
         return response_text, idea
 
     def setup_nextjs(self, project_name):
