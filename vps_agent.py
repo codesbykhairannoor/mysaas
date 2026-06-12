@@ -104,77 +104,96 @@ class EnterpriseCognitiveAgent:
         return project_path
 
     def write_initial_code(self, project_path, idea, design_doc):
-        print(f"\n[STEP 4] Menerjemahkan Desain menjadi Kode Enterprise (UI + i18n + Community + Testing ready)...")
+        print(f"\n[STEP 4] Menerjemahkan Desain menjadi Multi-File Enterprise Codebase...")
         prompt = f"""
-        Write the FULL content for `src/app/page.tsx` for a Next.js 14 App Router project.
+        You are an elite Silicon Valley Enterprise Developer.
         Project: {idea.get('title')}
         
         Read this Architecture Document:
-        {design_doc[:1000]} # Truncated for token limits
+        {design_doc[:1000]}
         
         CRITICAL ENTERPRISE INSTRUCTIONS:
-        1. SUPER SEO & GEO: Flawless metadata generation. Include placeholders for multi-language (i18n) routing/translation context.
-        2. AI-FRIENDLY: Include semantic HTML, Schema.org JSON-LD structured data for LLM scraping.
-        3. ENTERPRISE FEATURES: Integrate community placeholder sections (comments/forums), pricing tables (Stripe), and complex layouts.
-        4. ULTRA-PREMIUM UI: Use Tailwind CSS. Implement dynamic layouts, glassmorphism, or modern brutalism. No basic designs!
-        5. TESTING & RELIABILITY: Ensure the code is strictly typed and has no ESLint warnings. Use 'use client' where necessary.
+        You must generate the complete Next.js 14 App Router codebase. Because this is an enterprise app, you MUST NOT put everything in one file. You must use CLEAN CODE principles (modular components, separate lib files).
+        Create at minimum:
+        1. `src/app/page.tsx` (Main UI)
+        2. `src/app/layout.tsx` (Global layout)
+        3. `src/components/...` (Break down your UI into multiple reusable components)
+        4. `src/lib/...` (Utilities, API mock clients, etc)
         
-        OUTPUT ONLY THE RAW TYPESCRIPT CODE. No markdown fences.
+        OUTPUT FORMAT:
+        You MUST output a valid JSON object. Do not include markdown fences around the JSON, just raw JSON.
+        The keys must be the relative file paths. The values must be the exact raw code strings.
+        Example:
+        {{
+            "src/app/page.tsx": "import Hero from '@/components/Hero';\\nexport default function Page() {{ return <Hero /> }}",
+            "src/components/Hero.tsx": "export default function Hero() {{ return <div>Hero</div> }}"
+        }}
         """
-        code = self._query_ai(prompt)
-        self._save_code(project_path / "src" / "app" / "page.tsx", code)
-        return code
+        response_str = self._query_ai(prompt, require_json=True)
+        try:
+            files_dict = json.loads(response_str)
+            self._save_files(project_path, files_dict)
+            return files_dict
+        except Exception as e:
+            print(f"     [!] Gagal memparsing JSON multi-file: {e}")
+            return None
 
-    def self_reflect_and_fix(self, project_path, idea, current_code, max_iterations=3):
-        print(f"\n[STEP 5] EXTREME QUALITY CONTROL: Linting & Build Testing...")
-        best_code = current_code
+    def self_reflect_and_fix(self, project_path, idea, current_files, max_iterations=3):
+        print(f"\n[STEP 5] EXTREME QUALITY CONTROL: Linting & Build Testing (Multi-File)...")
+        best_files = current_files or {}
         
         for i in range(max_iterations):
             print(f"  -> Iterasi Evaluasi ke-{i+1}...")
             print("  -> Menjalankan 'npm run lint' dan 'npm run build'...")
             build_success, build_logs = self._test_build_and_lint(project_path)
             
+            # Buat ringkasan file untuk diinfokan ke AI
+            file_tree = "\\n".join(best_files.keys())
+            
             if not build_success:
                 critic_prompt = f"""
-                You are a Senior Staff Engineer fixing a BROKEN Enterprise Next.js page.
+                You are a Senior Staff Engineer fixing a BROKEN Enterprise Next.js app.
                 The Lint/Build FAILED with these logs:
-                {build_logs[-1500:]}
+                {build_logs[-2000:]}
                 
-                Current Code:
-                ```tsx
-                {best_code}
-                ```
+                Current files in project:
+                {file_tree}
                 
-                CRITICAL: You MUST fix the errors and TypeScript/ESLint warnings. DO NOT reply with "PERFECT". 
-                Rewrite the FULL, FIXED code. ONLY output raw code, no markdown fences.
+                CRITICAL INSTRUCTIONS:
+                You MUST fix the errors. DO NOT reply with "PERFECT".
+                Identify which files caused the error, and rewrite ONLY the files that need fixing.
+                Output a JSON object where keys are the relative file paths and values are the NEW raw code strings.
+                Example:
+                {{
+                    "src/components/BrokenComponent.tsx": "export default function Fixed() {{ ... }}"
+                }}
                 """
             else:
                 critic_prompt = f"""
-                You are an Enterprise Software Architect reviewing a Next.js page.
+                You are an Enterprise Software Architect reviewing a Next.js app.
                 Lint & Build are SUCCESSFUL.
                 Project Idea: {idea.get('title')}
                 
-                Current Code:
-                ```tsx
-                {best_code}
-                ```
+                Current files in project:
+                {file_tree}
                 
                 Identify flaws:
-                1. Is it truly Enterprise Scale? (Community, i18n, AI-friendly metadata)
-                2. Is the UI highly premium and complex?
+                1. Are components modular enough?
+                2. Are there any missing imports?
+                3. Is the UI highly premium?
                 
-                If it's absolutely perfect for a Silicon Valley startup, reply EXACTLY with the single word "PERFECT". 
-                Otherwise, rewrite the FULL ENHANCED code. ONLY output raw code, no explanations.
+                If the entire app is absolutely perfect for a Silicon Valley startup, reply EXACTLY with the single word "PERFECT". 
+                Otherwise, output a JSON object containing the rewritten/enhanced files (only the files you changed).
                 """
             
-            response = self._query_ai(critic_prompt)
+            response = self._query_ai(critic_prompt, require_json=False)
             clean_resp = response.strip()
             
             is_perfect = clean_resp == "PERFECT" or clean_resp.startswith("PERFECT")
             
             if is_perfect:
                 if build_success:
-                    print("  [+] Kritis Agen: Kode Enterprise SEMPURNA dan lulus Linter/Build! Keluar dari loop.")
+                    print("  [+] Kritis Agen: Seluruh Kode Enterprise SEMPURNA dan lulus Linter/Build! Keluar dari loop.")
                     break
                 else:
                     print("  [!] Peringatan: Agen menjawab PERFECT tapi Linter/Build GAGAL! Memaksa iterasi ulang...")
@@ -184,11 +203,21 @@ class EnterpriseCognitiveAgent:
                     print("  [!] Agen mengembalikan teks kosong, skip save...")
                     continue
                     
-                print("  [!] Kritis Agen: Menemukan kekurangan arsitektur. Menerapkan perbaikan...")
-                best_code = clean_resp
-                self._save_code(project_path / "src" / "app" / "page.tsx", best_code)
+                print("  [!] Kritis Agen: Menerapkan perbaikan Multi-File...")
+                try:
+                    match = re.search(r'```(?:json)?\n(.*?)\n```', clean_resp, re.DOTALL)
+                    if match:
+                        fixed_files = json.loads(match.group(1).strip())
+                    else:
+                        fixed_files = json.loads(clean_resp)
+                        
+                    best_files.update(fixed_files)
+                    self._save_files(project_path, fixed_files)
+                except Exception as e:
+                    print(f"  [!] Gagal memparsing JSON perbaikan (bukan format JSON valid): {e}")
+                    continue
                 
-        return best_code
+        return best_files
 
     def _test_build_and_lint(self, project_path):
         try:
@@ -237,10 +266,13 @@ class EnterpriseCognitiveAgent:
         print("[!!!] FATAL ERROR: Semua model gagal!")
         return ""
 
-    def _save_code(self, file_path, code):
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(code)
+    def _save_files(self, project_path, files_dict):
+        for rel_path, code in files_dict.items():
+            rel_path = rel_path.lstrip("/")
+            file_path = project_path / rel_path
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(code)
 
     def publish_to_github(self, project_path, idea):
         print(f"\n[STEP 6] Mempublikasikan Karya Enterprise ke GitHub: {idea.get('project_name')}...")
@@ -307,17 +339,17 @@ class EnterpriseCognitiveAgent:
                 project_path = self.setup_nextjs(idea.get("project_name"))
                 
                 # Simpan DESIGN.md
-                self._save_code(project_path / "DESIGN.md", design_doc)
+                self._save_files(project_path, {"DESIGN.md": design_doc})
                 
                 print("  -> Menginstall dependencies (lucide-react, framer-motion)...")
                 subprocess.run("npm install lucide-react framer-motion", shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL)
                 
-                initial_code = self.write_initial_code(project_path, idea, design_doc)
-                if not initial_code:
+                initial_files = self.write_initial_code(project_path, idea, design_doc)
+                if not initial_files:
                     print("[!] Gagal menulis kode.")
                     continue
                 
-                self.self_reflect_and_fix(project_path, idea, initial_code)
+                self.self_reflect_and_fix(project_path, idea, initial_files)
                 self.publish_to_github(project_path, idea)
                 
                 if project_number < 2:
