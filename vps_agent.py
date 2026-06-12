@@ -106,19 +106,25 @@ class EnterpriseCognitiveAgent:
     def write_initial_code(self, project_path, idea, design_doc):
         print(f"\n[STEP 4] Menerjemahkan Desain menjadi Multi-File Enterprise Codebase...")
         prompt = f"""
-        You are an elite Silicon Valley Enterprise Developer.
+        You are an elite AI system embodying multiple world-class roles simultaneously:
+        1. Fullstack Engineer (Next.js 14 App Router, Clean Architecture)
+        2. UI/UX Engineer (Tailwind, Framer Motion, Glassmorphism, Brutalism)
+        3. DevOps Engineer (Modular file structure, performance optimization)
+        4. Technical SEO & GEO Expert (Super SEO, Multi-language/i18n, structured data)
+        5. AI Researcher (Ensuring semantic HTML that is highly friendly to AI bots/crawlers)
+        
         Project: {idea.get('title')}
         
         Read this Architecture Document:
         {design_doc[:1000]}
         
         CRITICAL ENTERPRISE INSTRUCTIONS:
-        You must generate the complete Next.js 14 App Router codebase. Because this is an enterprise app, you MUST NOT put everything in one file. You must use CLEAN CODE principles (modular components, separate lib files).
+        You must generate the complete codebase. Because this is an enterprise app, you MUST NOT put everything in one file. 
         Create at minimum:
-        1. `src/app/page.tsx` (Main UI)
-        2. `src/app/layout.tsx` (Global layout)
-        3. `src/components/...` (Break down your UI into multiple reusable components)
-        4. `src/lib/...` (Utilities, API mock clients, etc)
+        1. `src/app/page.tsx` (Main UI with AI-friendly schema & i18n placeholders)
+        2. `src/app/layout.tsx` (Global layout & SEO metadata)
+        3. `src/components/...` (Reusable UI/UX components)
+        4. `src/lib/...` (Utilities, API mock clients)
         
         OUTPUT FORMAT:
         You MUST output a valid JSON object. Do not include markdown fences around the JSON, just raw JSON.
@@ -325,46 +331,47 @@ class EnterpriseCognitiveAgent:
 
     def run_factory(self):
         print("\n==================================================================")
-        print("🚀 THE ENTERPRISE ARTISAN AGENT STARTED (MAX 2 PROJECTS)")
+        print("🚀 THE ENTERPRISE ARTISAN AGENT STARTED (MAX 2 PROJECTS / 6 HOURS)")
         print("==================================================================")
         
-        for project_number in range(1, 3):
-            print(f"\n==================================================================")
-            print(f"🛠️ MEMULAI PROYEK ENTERPRISE KE-{project_number} / 2")
-            print(f"==================================================================")
-            try:
-                live_data = self._perform_live_research()
-                design_doc, idea = self.design_architecture(live_data)
-                
-                project_path = self.setup_nextjs(idea.get("project_name"))
-                
-                # Simpan DESIGN.md
-                self._save_files(project_path, {"DESIGN.md": design_doc})
-                
-                print("  -> Menginstall dependencies (lucide-react, framer-motion)...")
-                subprocess.run("npm install lucide-react framer-motion", shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL)
-                
-                initial_files = self.write_initial_code(project_path, idea, design_doc)
-                if not initial_files:
-                    print("[!] Gagal menulis kode.")
-                    continue
-                
-                self.self_reflect_and_fix(project_path, idea, initial_files)
-                self.publish_to_github(project_path, idea)
-                
-                if project_number < 2:
-                    print(f"\n[!] Proyek {project_number} Selesai. Istirahat 1 menit sebelum proyek terakhir...\n")
-                    time.sleep(60)
-                else:
-                    print(f"\n[🎉] SELURUH 2 PROYEK ENTERPRISE TELAH SELESAI! AGEN TIDUR.\n")
-                
-            except KeyboardInterrupt:
-                print("\n[!] Dihentikan secara manual.")
-                break
-            except Exception as e:
-                print(f"\n[!] Error: {e}. Lanjut ke proyek berikutnya jika ada...")
-                time.sleep(10)
-
+        while True:
+            for project_number in range(1, 3):
+                print(f"\n==================================================================")
+                print(f"🛠️ MEMULAI PROYEK ENTERPRISE KE-{project_number} / 2")
+                print(f"==================================================================")
+                try:
+                    live_data = self._perform_live_research()
+                    design_doc, idea = self.design_architecture(live_data)
+                    
+                    project_path = self.setup_nextjs(idea.get("project_name"))
+                    
+                    # Simpan DESIGN.md
+                    self._save_files(project_path, {"DESIGN.md": design_doc})
+                    
+                    print("  -> Menginstall dependencies (lucide-react, framer-motion)...")
+                    subprocess.run("npm install lucide-react framer-motion", shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL)
+                    
+                    initial_files = self.write_initial_code(project_path, idea, design_doc)
+                    if not initial_files:
+                        print("[!] Gagal menulis kode.")
+                        continue
+                    
+                    self.self_reflect_and_fix(project_path, idea, initial_files)
+                    self.publish_to_github(project_path, idea)
+                    
+                    if project_number < 2:
+                        print(f"\n[!] Proyek {project_number} Selesai. Istirahat 1 menit sebelum proyek terakhir...\n")
+                        time.sleep(60)
+                    else:
+                        print(f"\n[🎉] SELURUH 2 PROYEK ENTERPRISE TELAH SELESAI! AGEN TIDUR 6 JAM.\n")
+                        time.sleep(6 * 60 * 60) # Tidur 6 jam
+                    
+                except KeyboardInterrupt:
+                    print("\n[!] Dihentikan secara manual.")
+                    return
+                except Exception as e:
+                    print(f"\n[!] Error: {e}. Lanjut ke proyek berikutnya jika ada...")
+                    time.sleep(10)
 
 if __name__ == "__main__":
     if OPENAI_API_KEY == "sk-isi-openai-key-anda-disini":
