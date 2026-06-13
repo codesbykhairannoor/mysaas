@@ -1,5 +1,10 @@
 import os
 import subprocess
+from dotenv import load_dotenv
+
+# Wajib dipanggil sebelum import module lokal agar API Keys ter-load!
+load_dotenv()
+
 from utils.workspace import Workspace
 from utils.git_manager import GitManager
 from agents.researcher import ResearcherAgent

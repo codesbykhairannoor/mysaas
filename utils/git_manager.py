@@ -1,6 +1,9 @@
 import os
 import subprocess
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "ghp_isi-github-token-anda-disini")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "username_anda")

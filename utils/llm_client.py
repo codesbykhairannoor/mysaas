@@ -1,7 +1,10 @@
 import os
 import re
 import time
+from dotenv import load_dotenv
 from openai import OpenAI, PermissionDeniedError, RateLimitError
+
+load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-isi-openai-key-anda-disini")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
