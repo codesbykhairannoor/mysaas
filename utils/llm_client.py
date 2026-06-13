@@ -10,9 +10,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-isi-openai-key-anda-disini")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
 
 FALLBACK_MODELS = [
-    "qwen-turbo",              
-    "qwen-flash",              
-    "qwen-plus",               
+    "qwen-coder-turbo",
+    "qwen3.6-flash",
+    "qwen-plus",
+    "qwen2.5-coder-32b-instruct"
 ]
 
 client = OpenAI(
@@ -22,7 +23,7 @@ client = OpenAI(
 
 class LLMClient:
     @staticmethod
-    def query(prompt, require_json=False):
+    def query(prompt, require_json=False, extract_code_block=False):
         for model_name in FALLBACK_MODELS:
             print(f"     [>] Memanggil AI ({model_name})...")
             try:
@@ -35,7 +36,7 @@ class LLMClient:
                 
                 content = response.choices[0].message.content.strip()
                 
-                if not require_json and content != "PERFECT":
+                if extract_code_block and not require_json and content != "PERFECT":
                     match = re.search(r'```(?:tsx|typescript|ts|javascript|js|json)?\n(.*?)\n```', content, re.DOTALL)
                     if match:
                         content = match.group(1).strip()
