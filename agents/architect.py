@@ -53,4 +53,6 @@ class ArchitectAgent:
             print("     [!] Gagal memparsing JSON dari AI. Memaksa AI mengulang agar tidak memakai nama sembarangan...")
             return ArchitectAgent.design_architecture(live_data)
             
+        idea['project_name'] = idea['project_name'].lower().replace(" ", "-")
+            
         return response_text, idea
