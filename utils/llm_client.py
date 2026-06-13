@@ -10,10 +10,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-isi-openai-key-anda-disini")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
 
 FALLBACK_MODELS = [
-    "qwen-coder-turbo",
-    "qwen3.6-flash",
     "qwen-plus",
-    "qwen2.5-coder-32b-instruct"
+    "qwen2.5-coder-32b-instruct",
+    "qwen-turbo",
+    "qwen-max"
 ]
 
 client = OpenAI(
