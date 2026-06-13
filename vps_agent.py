@@ -84,7 +84,6 @@ class EnterpriseCognitiveAgent:
         # Ekstrak JSON dari dalam DESIGN.md
         idea = None
         try:
-            # Cari semua blok JSON, ambil yang terakhir (karena diinstruksikan di akhir)
             matches = re.findall(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
             for m in reversed(matches):
                 try:
@@ -96,7 +95,6 @@ class EnterpriseCognitiveAgent:
                     pass
                     
             if not idea:
-                # Jika AI lupa pakai markdown fences, cari objek JSON di string
                 match = re.search(r'(\{[\s\S]*"project_name"[\s\S]*\})', response_text)
                 if match:
                     idea = json.loads(match.group(1).strip())
@@ -114,7 +112,6 @@ class EnterpriseCognitiveAgent:
         print(f"\n[STEP 3] Membangun fondasi Enterprise Next.js untuk {project_name}...")
         project_path = self.output_dir / project_name
         if not project_path.exists():
-            # Menggunakan versi 14 spesifik agar tidak terblokir oleh pertanyaan interaktif Turbopack di Next.js 15
             cmd = f"npx -y create-next-app@14.2.15 {project_name} --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm"
             subprocess.run(cmd, shell=True, check=True, cwd=str(self.output_dir), stdout=subprocess.DEVNULL)
         return project_path
@@ -142,6 +139,9 @@ class EnterpriseCognitiveAgent:
         3. `src/components/...` (Reusable UI/UX components)
         4. `src/lib/...` (Utilities, API mock clients)
         
+        DESIGN AESTHETICS (CRITICAL):
+        You MUST use stunning, premium designs. Use curated vibrant colors, glassmorphism (backdrop-blur), deep shadows, modern typography, and smooth framer-motion micro-animations. DO NOT generate generic, plain white, simple designs. It must look like an award-winning Silicon Valley startup.
+        
         OUTPUT FORMAT:
         You MUST output a valid JSON object. Do not include markdown fences around the JSON, just raw JSON.
         The keys must be the relative file paths. The values must be the exact raw code strings.
@@ -153,7 +153,6 @@ class EnterpriseCognitiveAgent:
         """
         response_str = self._query_ai(prompt, require_json=True)
         try:
-            # Tangani kasus di mana AI tetap memberikan markdown fences ```json
             match = re.search(r'```(?:json)?\n(.*?)\n```', response_str, re.DOTALL)
             if match:
                 response_str = match.group(1).strip()
@@ -174,7 +173,6 @@ class EnterpriseCognitiveAgent:
             print("  -> Menjalankan 'npm run lint' dan 'npm run build'...")
             build_success, build_logs = self._test_build_and_lint(project_path)
             
-            # Buat ringkasan file untuk diinfokan ke AI
             file_tree = "\\n".join(best_files.keys())
             
             if not build_success:
@@ -190,10 +188,6 @@ class EnterpriseCognitiveAgent:
                 You MUST fix the errors. DO NOT reply with "PERFECT".
                 Identify which files caused the error, and rewrite ONLY the files that need fixing.
                 Output a JSON object where keys are the relative file paths and values are the NEW raw code strings.
-                Example:
-                {{
-                    "src/components/BrokenComponent.tsx": "export default function Fixed() {{ ... }}"
-                }}
                 """
             else:
                 critic_prompt = f"""
@@ -240,6 +234,7 @@ class EnterpriseCognitiveAgent:
                         
                     best_files.update(fixed_files)
                     self._save_files(project_path, fixed_files)
+                    self._git_commit(project_path, f"fix: resolve quality control and build errors (Iteration {i+1})")
                 except Exception as e:
                     print(f"  [!] Gagal memparsing JSON perbaikan (bukan format JSON valid): {e}")
                     continue
@@ -301,11 +296,19 @@ class EnterpriseCognitiveAgent:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(code)
 
-    def publish_to_github(self, project_path, idea):
-        print(f"\n[STEP 6] Mempublikasikan Karya Enterprise ke GitHub: {idea.get('project_name')}...")
+    def _git_commit(self, project_path, message):
+        commands = [
+            "git add .",
+            f'git commit -m "{message}"'
+        ]
+        for cmd in commands:
+            subprocess.run(cmd, shell=True, cwd=str(project_path), capture_output=True)
+
+    def _create_github_repo(self, idea):
+        print(f"  [+] Membuat repositori GitHub: {idea.get('project_name')}...")
         if not GITHUB_TOKEN or GITHUB_TOKEN == "ghp_isi-github-token-anda-disini":
-            print("[!] Token GitHub belum disetel. Melompati upload GitHub.")
-            return
+            print("  [!] Token GitHub belum disetel. Melewati pembuatan repo.")
+            return None
 
         url = "https://api.github.com/user/repos"
         headers = {
@@ -329,74 +332,85 @@ class EnterpriseCognitiveAgent:
                 
             repo_url_auth = f"https://{GITHUB_TOKEN}@github.com/{actual_username}/{idea.get('project_name')}.git"
             repo_url_clean = f"https://github.com/{actual_username}/{idea.get('project_name')}.git"
-            
-            commands = [
-                "git init",
-                "git config user.email \"vps-agent@ai.local\"",
-                "git config user.name \"Enterprise Artisan Agent\"",
-                "git add .",
-                "git commit -m \"Initial Enterprise Architecture & Codebase\"",
-                "git branch -M main",
-                "git remote remove origin", 
-                f"git remote add origin {repo_url_auth}",
-                "git push -u origin main -f"
-            ]
-            
-            print("     [Mengunggah Repositori...]")
-            for cmd in commands:
-                subprocess.run(cmd, shell=True, cwd=str(project_path), capture_output=True)
-            
-            print(f"[+] SUKSES BESAR! Repo Live di: {repo_url_clean}")
+            return repo_url_auth, repo_url_clean
         except Exception as e:
-            print(f"[!] Gagal publikasi: {e}")
+            print(f"  [!] Gagal membuat repo: {e}")
+            return None
 
     def run_factory(self):
         print("\n==================================================================")
-        print("🚀 THE ENTERPRISE ARTISAN AGENT STARTED (MAX 2 PROJECTS / 6 HOURS)")
+        print("🚀 THE ENTERPRISE ARTISAN AGENT STARTED (MAX 2 PROJECTS)")
         print("==================================================================")
         
-        while True:
-            for project_number in range(1, 3):
-                print(f"\n==================================================================")
-                print(f"🛠️ MEMULAI PROYEK ENTERPRISE KE-{project_number} / 2")
-                print(f"==================================================================")
-                try:
-                    live_data = self._perform_live_research()
-                    design_doc, idea = self.design_architecture(live_data)
-                    
-                    project_path = self.setup_nextjs(idea.get("project_name"))
-                    
-                    # Simpan DESIGN.md
-                    self._save_files(project_path, {"DESIGN.md": design_doc})
-                    
-                    print("  -> Menginstall dependencies (lucide-react, framer-motion)...")
-                    subprocess.run("npm install lucide-react framer-motion", shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL)
-                    
-                    initial_files = self.write_initial_code(project_path, idea, design_doc)
-                    if not initial_files:
-                        print("[!] Gagal menulis kode.")
-                        continue
-                    
-                    self.self_reflect_and_fix(project_path, idea, initial_files)
-                    self.publish_to_github(project_path, idea)
-                    
-                    print(f"  [🧹] Membersihkan direktori lokal {project_path} untuk menghemat ruang disk VPS...")
-                    import shutil
-                    shutil.rmtree(project_path, ignore_errors=True)
-                    
-                    if project_number < 2:
-                        print(f"\n[!] Proyek {project_number} Selesai. Istirahat 1 menit sebelum proyek terakhir...\n")
-                        time.sleep(60)
-                    else:
-                        print(f"\n[🎉] SELURUH 2 PROYEK ENTERPRISE TELAH SELESAI! AGEN TIDUR 6 JAM.\n")
-                        time.sleep(6 * 60 * 60) # Tidur 6 jam
-                    
-                except KeyboardInterrupt:
-                    print("\n[!] Dihentikan secara manual.")
-                    return
-                except Exception as e:
-                    print(f"\n[!] Error: {e}. Lanjut ke proyek berikutnya jika ada...")
-                    time.sleep(10)
+        for project_number in range(1, 3):
+            print(f"\n==================================================================")
+            print(f"🛠️ MEMULAI PROYEK ENTERPRISE KE-{project_number} / 2")
+            print(f"==================================================================")
+            try:
+                live_data = self._perform_live_research()
+                design_doc, idea = self.design_architecture(live_data)
+                
+                # 1. Setup Next.js
+                project_path = self.setup_nextjs(idea.get("project_name"))
+                
+                # Inisialisasi Git & Commits awal
+                subprocess.run("git init", shell=True, cwd=str(project_path), capture_output=True)
+                subprocess.run("git config user.email \"vps-agent@ai.local\"", shell=True, cwd=str(project_path), capture_output=True)
+                subprocess.run("git config user.name \"Enterprise Artisan Agent\"", shell=True, cwd=str(project_path), capture_output=True)
+                subprocess.run("git branch -M main", shell=True, cwd=str(project_path), capture_output=True)
+                self._git_commit(project_path, "chore: setup Next.js 14 enterprise boilerplate")
+                
+                # Buat Repositori GitHub
+                repo_urls = self._create_github_repo(idea)
+                if repo_urls:
+                    repo_url_auth, repo_url_clean = repo_urls
+                    subprocess.run("git remote remove origin", shell=True, cwd=str(project_path), capture_output=True)
+                    subprocess.run(f"git remote add origin {repo_url_auth}", shell=True, cwd=str(project_path), capture_output=True)
+                
+                # 2. DESIGN.md
+                self._save_files(project_path, {"DESIGN.md": design_doc})
+                self._git_commit(project_path, "docs: initialize enterprise architecture DESIGN.md")
+                
+                # 3. Dependencies
+                print("  -> Menginstall dependencies (lucide-react, framer-motion)...")
+                subprocess.run("npm install lucide-react framer-motion", shell=True, cwd=str(project_path), stdout=subprocess.DEVNULL)
+                self._git_commit(project_path, "build: install lucide-react and framer-motion")
+                
+                # 4. Initial Code
+                initial_files = self.write_initial_code(project_path, idea, design_doc)
+                if not initial_files:
+                    print("[!] Gagal menulis kode.")
+                    continue
+                self._git_commit(project_path, "feat: implement multi-file UI components and pages")
+                
+                # 5. Quality Control
+                self.self_reflect_and_fix(project_path, idea, initial_files)
+                
+                # 6. Publish to GitHub
+                if repo_urls:
+                    print(f"\n[STEP 6] Mengunggah Karya Enterprise ke GitHub...")
+                    subprocess.run("git push -u origin main -f", shell=True, cwd=str(project_path), capture_output=True)
+                    print(f"[+] SUKSES BESAR! Repo Live di: {repo_url_clean}")
+                
+                print(f"  [🧹] Membersihkan direktori lokal {project_path} untuk menghemat ruang disk VPS...")
+                import shutil
+                shutil.rmtree(project_path, ignore_errors=True)
+                
+                if project_number < 2:
+                    print(f"\n[!] Proyek {project_number} Selesai. Istirahat 1 menit sebelum proyek terakhir...\n")
+                    time.sleep(60)
+                
+            except KeyboardInterrupt:
+                print("\n[!] Dihentikan secara manual.")
+                return
+            except Exception as e:
+                print(f"\n[!] Error: {e}. Lanjut ke proyek berikutnya jika ada...")
+                time.sleep(10)
+
+        # Matikan PM2 secara permanen setelah 2 proyek selesai
+        print(f"\n[🎉] SELURUH 2 PROYEK ENTERPRISE TELAH SELESAI! MEMBUNUH PROSES PM2 AGAR TIDAK LOOPING.\n")
+        subprocess.run("pm2 stop qwen-factory", shell=True)
+
 
 if __name__ == "__main__":
     if OPENAI_API_KEY == "sk-isi-openai-key-anda-disini":
