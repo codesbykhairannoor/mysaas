@@ -1,0 +1,56 @@
+import os
+import re
+import time
+from openai import OpenAI, PermissionDeniedError, RateLimitError
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-isi-openai-key-anda-disini")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
+
+FALLBACK_MODELS = [
+    "qwen-turbo",              
+    "qwen-flash",              
+    "qwen-plus",               
+]
+
+client = OpenAI(
+    api_key=OPENAI_API_KEY,
+    base_url=OPENAI_BASE_URL
+)
+
+class LLMClient:
+    @staticmethod
+    def query(prompt, require_json=False):
+        for model_name in FALLBACK_MODELS:
+            print(f"     [>] Memanggil AI ({model_name})...")
+            try:
+                response_format = {"type": "json_object"} if require_json else None
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    response_format=response_format
+                )
+                
+                content = response.choices[0].message.content.strip()
+                
+                if not require_json and content != "PERFECT":
+                    match = re.search(r'```(?:tsx|typescript|ts|javascript|js|json)?\n(.*?)\n```', content, re.DOTALL)
+                    if match:
+                        content = match.group(1).strip()
+                    elif content.startswith("```"):
+                        content = content.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+                
+                return content.strip()
+                
+            except PermissionDeniedError:
+                print(f"     [X] Error 403 ({model_name}). Melompat ke cadangan...")
+                continue
+            except RateLimitError:
+                print(f"     [X] Error 429 ({model_name}). Melompat ke cadangan...")
+                time.sleep(2)
+                continue
+            except Exception as e:
+                print(f"     [X] Error tak terduga ({model_name}): {e}")
+                continue
+                
+        print("[!!!] FATAL ERROR: Semua model gagal!")
+        return ""
