@@ -8,22 +8,22 @@ class ArchitectAgent:
         print(f"\n[STEP 2] Agent bertindak sebagai Chief Architect: Merancang DESIGN.md...")
         prompt = f"""
         You are an elite Silicon Valley Chief Software Architect.
-        Analyze this recent live market data:
+        Analyze this recent live market data (if any):
         {live_data}
         
         CRITICAL DOCTRINE:
-        1. NO PDF TOOLS. Pick a wildly creative, highly profitable HIGH-TRAFFIC SaaS idea.
-        2. Plan a deep architecture for a Next.js App Router project.
-        3. The architecture MUST include strategies for: SUPER SEO, Global GEO Targeting (i18n Multi-language), AI-Friendly structured data, Community Features, and Enterprise-grade UI/UX.
+        1. USER DIRECTIVE: You MUST build a "Video Summarizer SaaS" (for YouTube, TikTok, Instagram Reels, etc.). Do not build anything else!
+        2. Plan a deep architecture for a Next.js App Router project for this Video Summarizer.
+        3. The architecture MUST include strategies for: SUPER SEO, Global GEO Targeting (i18n Multi-language), AI-Friendly structured data, and Enterprise-grade UI/UX.
         
-        Write a comprehensive technical `DESIGN.md` document outlining the idea, target audience, and technical implementation plan.
+        Write a comprehensive technical `DESIGN.md` document outlining the Video Summarizer idea, target audience, and technical implementation plan.
         Make it look extremely professional with markdown headings, tables, and architecture guidelines.
         
         End the document with a JSON block EXACTLY like this (wrapped in ```json):
         ```json
         {{
-            "project_name": "high-traffic-saas-name-no-spaces",
-            "title": "Premium SaaS Name",
+            "project_name": "video-summarizer-saas",
+            "title": "Video Summarizer AI",
             "description": "Short compelling description"
         }}
         ```
