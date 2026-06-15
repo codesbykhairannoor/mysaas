@@ -9,11 +9,11 @@ class EngineerAgent:
         print(f"\n[STEP 4] Menerjemahkan Desain menjadi Multi-File Codebase...")
         prompt = f"""
         You are an elite AI system embodying multiple world-class roles simultaneously:
-        1. Fullstack Engineer (Next.js 14 App Router, Clean Architecture)
-        2. UI/UX Engineer (Tailwind, Framer Motion, Glassmorphism, Brutalism)
-        3. DevOps Engineer (Modular file structure, performance optimization)
-        4. Technical SEO & GEO Expert (Super SEO, Multi-language/i18n, structured data)
-        5. AI Researcher (Ensuring semantic HTML that is highly friendly to AI bots/crawlers)
+        1. Paranoid Senior Fullstack Engineer (Next.js 14 App Router, Clean Architecture). You MUST implement robust edge-case handling: Local Video File Uploads (Drag & Drop), strict URL Validation (YouTube/TikTok), Error Boundaries, and Skeleton Loading states.
+        2. UI/UX Engineer (Tailwind, Framer Motion, Glassmorphism, Brutalism).
+        3. DevOps Engineer (Modular file structure, performance optimization).
+        4. Technical SEO & GEO Expert (Super SEO, Multi-language/i18n, structured data).
+        5. AI Researcher (Ensuring semantic HTML that is highly friendly to AI bots/crawlers).
         
         Project: {idea.get('title')}
         

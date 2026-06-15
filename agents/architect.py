@@ -12,9 +12,10 @@ class ArchitectAgent:
         {live_data}
         
         CRITICAL DOCTRINE:
-        1. USER DIRECTIVE: You MUST build a "Video Summarizer SaaS" (for YouTube, TikTok, Instagram Reels, etc.). Do not build anything else!
-        2. Plan a deep architecture for a Next.js App Router project for this Video Summarizer.
-        3. The architecture MUST include strategies for: SUPER SEO, Global GEO Targeting (i18n Multi-language), AI-Friendly structured data, and Enterprise-grade UI/UX.
+        1. USER DIRECTIVE: You MUST build a massive, all-encompassing "Video Summarizer SaaS". Do NOT limit it to just YouTube/TikTok links! You MUST include features for: Local Video Uploads, robust URL Validation, and Edge Case handling.
+        2. Act as a Paranoid Senior Architect. Think: "What if the user uploads a local file?", "How do we validate links?", "How do we handle long processing times?".
+        3. Plan a deep architecture for a Next.js App Router project for this SaaS.
+        4. The architecture MUST include strategies for: SUPER SEO, Global GEO Targeting (i18n Multi-language), AI-Friendly structured data, and Enterprise-grade UI/UX.
         
         Write a comprehensive technical `DESIGN.md` document outlining the Video Summarizer idea, target audience, and technical implementation plan.
         Make it look extremely professional with markdown headings, tables, and architecture guidelines.
