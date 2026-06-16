@@ -1,6 +1,7 @@
 import json
 import re
 import subprocess
+import time
 from utils.llm_client import LLMClient
 from utils.workspace import Workspace
 from utils.git_manager import GitManager
@@ -19,11 +20,17 @@ class QAEngineerAgent:
             return False, str(e)
 
     @staticmethod
-    def continuous_development_loop(project_path, idea, current_files, max_iterations=15):
-        print(f"\n[STEP 5] DEDICATED ENGINEERING: Continuous Development Loop (Max {max_iterations} Iterations)...")
+    def continuous_development_loop(project_path, idea, current_files, max_iterations=100):
+        print(f"\n[STEP 5] DEDICATED ENGINEERING: Continuous Development Loop (Max {max_iterations} Iterations / 12 Hours)...")
         best_files = current_files or {}
+        start_time = time.time()
+        max_duration = 12 * 3600  # 12 Jam dalam detik
         
         for i in range(max_iterations):
+            if time.time() - start_time > max_duration:
+                print("\n  [!] Kritis Agen: Batas waktu maksimal 12 Jam telah tercapai! Menghentikan pengembangan secara paksa.")
+                break
+                
             print(f"\n  ========================================")
             print(f"  -> Iterasi Pengembangan ke-{i+1} / {max_iterations}...")
             print("  -> Menjalankan 'npm run lint' dan 'npm run build'...")
